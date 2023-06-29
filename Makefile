@@ -3,7 +3,10 @@ H := \#
 
 .PHONY: all binaries images
 
-all: binaries images
+default: AppleTest.dsk
+
+AppleTest.dsk: data/ProDOS_1.9.dsk binaries images
+	./scripts/build_dsk.sh $< $@ out/*
 
 binaries: out/MODETEST$(H)066000
 
@@ -48,4 +51,4 @@ out/DHGR.BIN$(H)062000 out/DHGR.AUX$(H)062000: data/parrot280.bmp
 	mv data/PARROT.AUX out/DHGR.AUX$(H)062000
 
 clean:
-	rm -rf out src/*.o data/*.SL2 data/*.DL1 data/*.DL2 data/*.BIN data/*.AUX
+	rm -rf *.dsk out src/*.o data/*.SL2 data/*.DL1 data/*.DL2 data/*.BIN data/*.AUX
