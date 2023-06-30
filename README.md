@@ -1,9 +1,21 @@
 A diagnostic disk for testing various Apple II functions
 
- * MODETEST - test the different Apple II and IIe video modes
+[Download](https://github.com/markadev/AppleII-test/releases)
+
+ * `MODETEST` - test the different Apple II and IIe video modes
 
 
-## Building
+## Running the image
+
+Write the disk image (`AppleTest.dsk`) to a floppy or load it onto a disk emulator and boot it on
+an Apple II+ or Apple IIe. You can `BRUN` the programs from the basic prompt
+
+```
+]BRUN MODETEST
+```
+
+
+## Building the image
 
 This is generally easiest to build in a Linux-like environment. You will need:
  * cc65 - https://www.cc65.org/
@@ -34,14 +46,4 @@ wget https://github.com/AppleCommander/AppleCommander/releases/download/1.8.0/Ap
 
 ```shell
 make
-```
-
-
-### Run the image
-
-Write the disk image (`AppleTest.dsk`) to a floppy or load it onto a disk emulator and boot it on
-an Apple II+ or Apple IIe. You can `BRUN` the programs from the basic prompt
-
-```
-]BRUN MODETEST
 ```
