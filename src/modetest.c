@@ -252,18 +252,13 @@ void test_dhires(uchar mixed) {
 
 
 void test_dhires_altmodes() {
-    // TODO
-#if 0
-    // mode 3 (mixed mode)
-    SOFTSW_80COLOFF;
-    SOFTSW_DHIRESON;
-    SOFTSW_DHIRESOFF;
-    SOFTSW_80COLON;
-    SOFTSW_DHIRESON;
-    SOFTSW_DHIRESOFF;
-    SOFTSW_DHIRESON;
+    // TODO: create an image to test these modes better
+    if(bload_hires("DHGR.AUX", HGR_PAGE1, 1) != 0 || bload_hires("DHGR.BIN", HGR_PAGE1, 0) != 0) {
+        return;
+    }
 
-    getkey();
+    SOFTSW_HIRESON;
+    SOFTSW_TEXTOFF;
 
     // mode 1 (monochrome 560x192)
     SOFTSW_80COLOFF;
@@ -276,7 +271,19 @@ void test_dhires_altmodes() {
 
     getkey();
 
-    // other? (160x192)
+    // mode 3 (mixed mode)
+    SOFTSW_80COLOFF;
+    SOFTSW_DHIRESON;
+    SOFTSW_DHIRESOFF;
+    SOFTSW_80COLON;
+    SOFTSW_DHIRESON;
+    SOFTSW_DHIRESOFF;
+    SOFTSW_DHIRESON;
+
+    getkey();
+
+    // other? (160x192) from US Patent 4631692
+    // This mode is not mentioned in the Apple Extended 80-Column Text/AppleColor Adapter Card manual
     SOFTSW_80COLON;
     SOFTSW_DHIRESON;
     SOFTSW_DHIRESOFF;
@@ -284,7 +291,6 @@ void test_dhires_altmodes() {
     SOFTSW_DHIRESON;
     SOFTSW_DHIRESOFF;
     SOFTSW_DHIRESON;
-#endif
 }
 
 
@@ -316,7 +322,7 @@ int main() {
         puts("  (F) MIXED DLORES/TEXT (PAGE1, PAGE2)");
         puts("  (G) DOUBLE-HIRES (PAGE1, PAGE2)");
         puts("  (H) MIXED DHIRES/TEXT (PAGE1, PAGE2)");
-        puts("  (J) DHIRES ALT MODES");
+        puts("  (J) DHIRES ALT MODES (WIP)");
         puts("\nENTER SELECTION:");
 
         switch(getkey()) {
