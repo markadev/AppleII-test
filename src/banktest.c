@@ -78,6 +78,74 @@ void test_textmem(uchar page_num) {
 }
 
 
+void test_hgrmem(uchar page_num) {
+    uchar *page = (page_num == 2) ? HGR_PAGE2 : HGR_PAGE1;
+    uchar *line;
+    uchar i;
+
+    memset_dbl(page, 0, HGR_PAGE_SIZE, 1);
+
+    // Set the 'control' lines in main memory
+    line = page + 0x200; // line 32
+    for(i=0; i < 16; i++) {
+        line[2] = 0x7f;
+
+        // Advance to the next 8th line
+        line += 0x80;
+        if(line >= (page+0x400)) {
+            line = line - 0x400 + 40;
+        }
+    }
+
+    // Test these combinations of soft-switches:
+    //   {HIRESON,HIRESOFF} * {80storeon,80storeoff} * {page2on,page2off} * {ramwrton,ramwrtoff}
+    line = page + 0x200; // line 32
+    for(i=0; i < 16; i++) {
+        if(i & 0x08)
+            SOFTSW_HIRESON;
+        else
+            SOFTSW_HIRESOFF;
+
+        if(i & 0x04)
+            SOFTSW_80STOREON;
+        else
+            SOFTSW_80STOREOFF;
+
+        if(i & 0x02)
+            SOFTSW_PAGE2ON;
+        else
+            SOFTSW_PAGE2OFF;
+
+        if(i & 0x01)
+            memstore_with_RAMWRTON(0x7f, &line[3]);
+        else
+            line[3] = 0x7f;
+
+        // Advance to the next 8th line
+        line += 0x80;
+        if(line >= (page+0x400)) {
+            line = line - 0x400 + 40;
+        }
+    }
+
+    SOFTSW_HIRESOFF;
+    SOFTSW_80STOREOFF;
+    SOFTSW_PAGE2OFF;
+
+    // Display the results
+    if(page_num == 2)
+        SOFTSW_PAGE2ON;
+    SOFTSW_HIRESON;
+    SOFTSW_TEXTOFF;
+    // mode 2 (color 140x192)
+    SOFTSW_80COLON;
+    SOFTSW_DHIRESON;
+    SOFTSW_DHIRESOFF;
+    SOFTSW_DHIRESON;
+    SOFTSW_DHIRESOFF;
+    SOFTSW_DHIRESON;
+}
+
 int main() {
     while(1) {
         // Reset soft-switches to 40 column text mode
@@ -93,11 +161,9 @@ int main() {
         puts("");
         puts("  (Q) TEXT MEMORY PAGE 1");
         puts("  (W) TEXT MEMORY PAGE 2");
+        puts("  (E) HGR MEMORY PAGE 1");
+        puts("  (R) HGR MEMORY PAGE 2");
         puts("\nENTER SELECTION:");
-
-        // TODO: combos of
-        //  text mem: {page1 mem,page2 mem} * {80storeon,80storeoff} * {ramwrton,ramwrtoff} * {page2on,page2off}
-        // hires mem: {page1 mem,page2 mem} * {80storeon,80storeoff} * {ramwrton,ramwrtoff} * {page2on,page2off} * {HIRESON,HIRESOFF}
 
         switch(getkey()) {
         case 'Q':
@@ -107,6 +173,14 @@ int main() {
         case 'W':
             // text memory PAGE2
             test_textmem(2);
+            break;
+        case 'E':
+            // hgr memory PAGE1
+            test_hgrmem(1);
+            break;
+        case 'R':
+            // hgr memory PAGE2
+            test_hgrmem(2);
             break;
         case CH_ESC:
             return 0;
