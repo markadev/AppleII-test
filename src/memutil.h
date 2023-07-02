@@ -18,6 +18,8 @@ typedef unsigned char uchar;
 #define HGR_PAGE_SIZE 8192
 
 
+extern void __fastcall__ memstore_with_RAMWRTON(uchar value, uchar *addr);
+
 void memcpy_to_aux(void *dst, const void *src, unsigned int len);
 void memcpy_from_aux(void *dst, const void *src, unsigned int len);
 void memcpy_aux_to_aux(void *dst, const void *src, unsigned int len);

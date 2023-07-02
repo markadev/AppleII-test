@@ -3,6 +3,7 @@ A diagnostic disk for testing various Apple II functions
 [Download](https://github.com/markadev/AppleII-test/releases)
 
  * `MODETEST` - test the different Apple II and IIe video modes
+ * `BANKTEST` - test IIe memory write behavior under various combinations of soft-switches
 
 
 ## Running the image

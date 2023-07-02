@@ -8,7 +8,8 @@ default: AppleTest.dsk
 AppleTest.dsk: data/ProDOS_1.9.dsk binaries images
 	./scripts/build_dsk.sh $< $@ out/*
 
-binaries: out/MODETEST$(H)066000
+binaries: out/MODETEST$(H)066000 \
+	out/BANKTEST$(H)066000
 
 images: out/LGR.BIN$(H)060400 \
 	out/DLGR.AUX$(H)060400 \
@@ -21,8 +22,15 @@ out/MODETEST$(H)066000: src/modetest.o src/memutil.o
 	@mkdir -p out
 	cl65 $(CFLAGS) -Wl -D__EXEHDR__=0 --start-addr 0x6000 -o $@ $^
 
+out/BANKTEST$(H)066000: src/banktest.o src/memutil.o src/memstore.o
+	@mkdir -p out
+	cl65 $(CFLAGS) -Wl -D__EXEHDR__=0 --start-addr 0x6000 -o $@ $^
+
 %.o: %.c
 	cl65 $(CFLAGS) -c -o $@ $<
+
+%.o: %.asm
+	cl65 -c -o $@ $<
 
 # lores image
 out/LGR.BIN$(H)060400: data/apple160.bmp

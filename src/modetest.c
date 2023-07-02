@@ -3,6 +3,7 @@
 #include <string.h>
 #include "memutil.h"
 #include "modetest.h"
+#include "apple_io.h"
 
 
 const uchar page1_label[] = {CH_A+15, CH_A, CH_A+6, CH_A+4, CH_0+1, 0}; // "PAGE1"
