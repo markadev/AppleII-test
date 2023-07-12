@@ -253,12 +253,33 @@ void test_dhires(uchar mixed) {
 
 
 void test_dhires_altmodes() {
-    // TODO: create an image to test these modes better
+    unsigned int offs;
+    unsigned char i;
+
     if(bload_hires("DHGR.AUX", HGR_PAGE1, 1) != 0 || bload_hires("DHGR.BIN", HGR_PAGE1, 0) != 0) {
         return;
     }
 
     SOFTSW_HIRESON;
+    SOFTSW_80STOREON;
+
+    // Set the high bit for all data bytes on the right half of the screen
+    for(offs = 0, i = 0; i < 3; i++) {
+        for(; offs < HGR_PAGE_SIZE; offs += 0x80) {
+            unsigned char j;
+            for(j = 20; j < 40; j++) {
+                HGR_PAGE1[offs+j] |= 0x80;
+            }
+
+            SOFTSW_PAGE2ON;
+            for(j = 20; j < 40; j++) {
+                HGR_PAGE1[offs+j] |= 0x80;
+            }
+            SOFTSW_PAGE2OFF;
+        }
+        offs = (offs & 0x1fff) + 40;
+    }
+
     SOFTSW_TEXTOFF;
 
     // mode 1 (monochrome 560x192)
@@ -272,11 +293,21 @@ void test_dhires_altmodes() {
 
     getkey();
 
-    // mode 3 (mixed mode)
+    // mode 3 (mixed mode) - the left half of the image will be monochrome & the right half will be colored
     SOFTSW_80COLOFF;
     SOFTSW_DHIRESON;
     SOFTSW_DHIRESOFF;
     SOFTSW_80COLON;
+    SOFTSW_DHIRESON;
+    SOFTSW_DHIRESOFF;
+    SOFTSW_DHIRESON;
+
+    getkey();
+
+    // mode 2 (color 140x192)
+    SOFTSW_80COLON;
+    SOFTSW_DHIRESON;
+    SOFTSW_DHIRESOFF;
     SOFTSW_DHIRESON;
     SOFTSW_DHIRESOFF;
     SOFTSW_DHIRESON;
