@@ -323,6 +323,7 @@ void test_dhires_altmodes() {
     SOFTSW_DHIRESON;
     SOFTSW_DHIRESOFF;
     SOFTSW_DHIRESON;
+    SOFTSW_80COLON;
 }
 
 
