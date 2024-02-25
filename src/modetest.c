@@ -8,7 +8,9 @@
 
 const uchar page1_label[] = {CH_A+15, CH_A, CH_A+6, CH_A+4, CH_0+1, 0}; // "PAGE1"
 const uchar page2_label[] = {CH_A+15, CH_A, CH_A+6, CH_A+4, CH_0+2, 0}; // "PAGE2"
-const uchar hexchars[16] = {CH_0, CH_0+1, CH_0+2, CH_0+3, CH_0+4, CH_0+5, CH_0+6, CH_0+7, CH_0+8, CH_0+9, CH_A, CH_A+1, CH_A+2, CH_A+3, CH_A+4, CH_A+5};
+
+volatile uchar * const videx_textmem_base = (volatile uchar *)0xcc00;
+volatile uchar * const videx_io_base = (volatile uchar *)0xc0b0;
 
 
 void place_char_on_line(uchar *line, uchar col, uchar ch, uchar is80) {
@@ -33,6 +35,7 @@ void place_chars_on_line(uchar *line, uchar col, const uchar *s, uchar is80) {
 
 
 void draw_text_pattern(uchar *page, uchar is80) {
+    static const uchar hexchars[16] = {CH_0, CH_0+1, CH_0+2, CH_0+3, CH_0+4, CH_0+5, CH_0+6, CH_0+7, CH_0+8, CH_0+9, CH_A, CH_A+1, CH_A+2, CH_A+3, CH_A+4, CH_A+5};
     uchar ch, i, line_no, lmargin, last_col;
     uchar *line;
 
@@ -114,6 +117,25 @@ char getkey() {
 }
 
 
+void videx_crtc_write(uchar reg, uchar value) {
+    *videx_io_base = reg;
+    *(videx_io_base+1) = value;
+}
+
+
+void videx_pagesel(uchar page) {
+    *(videx_io_base + (page << 2)) = 0;
+}
+
+
+void videx_putc(unsigned int line_offset, uchar x, uchar ch) {
+    unsigned int offset = line_offset + x;
+
+    videx_pagesel(offset >> 9);
+    videx_textmem_base[offset & 0x1ff] = ch;
+}
+
+
 // 40 & 80-column text (PAGE1, PAGE2)
 void test_text(uchar is80) {
     // load PAGE1 & clear PAGE2
@@ -183,6 +205,76 @@ void test_hires(uchar mixed) {
     }
     memset_dbl(HGR_PAGE1, 0, HGR_PAGE_SIZE, 0);
     SOFTSW_PAGE2ON;
+}
+
+
+// videx 80-column text
+void test_videx_80col() {
+    const static uchar hexchars[16] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46};
+    uchar ch, i, line_no;
+    unsigned int line_offset;
+
+    // set CRTC values from Videx firmware
+    videx_crtc_write(0, 0x7b);
+    videx_crtc_write(1, 0x50);
+    videx_crtc_write(2, 0x5e);
+    videx_crtc_write(3, 0x29);
+    videx_crtc_write(4, 0x1b);
+    videx_crtc_write(5, 0x08);
+    videx_crtc_write(6, 0x18);
+    videx_crtc_write(7, 0x19);
+    videx_crtc_write(8, 0x00);
+    videx_crtc_write(9, 0x08);
+    videx_crtc_write(10, 0xe0);
+    videx_crtc_write(11, 0x08);
+    videx_crtc_write(12, 0x00);
+    videx_crtc_write(13, 0x00);
+    videx_crtc_write(14, 0x00);
+    videx_crtc_write(15, 0x00);
+
+    CARDMEM_DEACTIVATE;
+    CARDMEM_SLOT3_ACTIVATE;
+
+    // clear screen memory
+    for(i=0; i < 4; i++) {
+        videx_pagesel(i);
+        memset(videx_textmem_base, CH_SPACE & 0x7f, 512);
+    }
+
+    ch = 0;
+    line_offset = 0;
+    for(line_no=0; line_no < 24; line_no++) {
+        if((line_no == 0) || (line_no == 23)) {
+            // top/bottom border
+            for(i=0; i < 80; i++) {
+                videx_putc(line_offset, i, CH_HASH & 0x7f);
+            }
+        } else {
+            // left/right border
+            videx_putc(line_offset, 0, CH_HASH & 0x7f);
+            videx_putc(line_offset, 79, CH_HASH & 0x7f);
+        }
+
+        if(line_no == 2) {
+            // table top heading
+            for(i = 0; i < 16; i++) {
+                videx_putc(line_offset, 33+i, hexchars[i]);
+            }
+        } else if((line_no >= 3) && (line_no < 19)) {
+            // table rows
+            videx_putc(line_offset, 31, hexchars[line_no-3]);
+            for(i = 0; i < 16; i++) {
+                videx_putc(line_offset, 33 + i, ch);
+                ch++;
+            }
+        }
+
+        // advance to next line
+        line_offset += 80;
+    }
+    CARDMEM_DEACTIVATE;
+
+    SOFTSW_SETAN0;  // enable 80 column switch
 }
 
 
@@ -338,6 +430,7 @@ int main() {
         SOFTSW_HIRESOFF;
         SOFTSW_ALTCHARSETOFF;
         SOFTSW_DHIRESOFF;
+        SOFTSW_CLRAN0;
 
         puts("\n\n-------------------------------------");
         puts("VIDEO MODE TEST");
@@ -348,6 +441,7 @@ int main() {
         puts("  (E) MIXED LORES/TEXT (PAGE1, PAGE2)");
         puts("  (R) HIRES (PAGE1, PAGE2)");
         puts("  (T) MIXED HIRES/TEXT (PAGE1, PAGE2)");
+        puts("  (Y) VIDEX 80-COL TEXT");
         puts("APPLE IIE MODES");
         puts("  (A) 80-COL TEXT (PAGE1, PAGE2)");
         puts("  (S) TEXT ALTCHARSET (40-COL, 80-COL)");
@@ -355,7 +449,7 @@ int main() {
         puts("  (F) MIXED DLORES/TEXT (PAGE1, PAGE2)");
         puts("  (G) DOUBLE-HIRES (PAGE1, PAGE2)");
         puts("  (H) MIXED DHIRES/TEXT (PAGE1, PAGE2)");
-        puts("  (J) DHIRES ALT MODES (WIP)");
+        puts("  (J) VIDEO7 RGB MODES");
         puts("\nENTER SELECTION:");
 
         switch(getkey()) {
@@ -378,6 +472,10 @@ int main() {
         case 'T':
             // mixed hires/text
             test_hires(1);
+            break;
+        case 'Y':
+            // videx 80-column text
+            test_videx_80col();
             break;
         case 'A':
             // 80-column text

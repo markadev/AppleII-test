@@ -4,6 +4,9 @@
 #define IO_RD_KBD ((volatile uchar *)0xc000)
 #define IO_WR_KBDSTRB ((volatile uchar *)0xc010)
 
+#define CARDMEM_DEACTIVATE asm("sta $cfff")
+#define CARDMEM_SLOT3_ACTIVATE asm("sta $c300")
+
 #define SOFTSW_80STOREOFF asm("sta $c000")
 #define SOFTSW_80STOREON asm("sta $c001")
 #define SOFTSW_80COLOFF asm("sta $c00c")
@@ -18,6 +21,8 @@
 #define SOFTSW_PAGE2ON asm("sta $c055")
 #define SOFTSW_HIRESOFF asm("sta $c056")
 #define SOFTSW_HIRESON asm("sta $c057")
+#define SOFTSW_CLRAN0 asm("sta $c058")
+#define SOFTSW_SETAN0 asm("sta $c059")
 #define SOFTSW_DHIRESON asm("sta $c05e")
 #define SOFTSW_DHIRESOFF asm("sta $c05f")
 
