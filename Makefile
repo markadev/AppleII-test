@@ -5,8 +5,10 @@ H := \#
 
 default: AppleTest.dsk
 
-AppleTest.dsk: data/ProDOS_1.9.dsk binaries images
-	./scripts/build_dsk.sh $< $@ out/*
+BASIC_FILES = src/MOUSE.MOVE.bas src/SPLIT.bas
+
+AppleTest.dsk: data/ProDOS_1.9.dsk binaries images $(BASIC_FILES)
+	./scripts/build_dsk.sh $< $@ out/* $(BASIC_FILES)
 
 binaries: out/MODETEST$(H)066000 \
 	out/BANKTEST$(H)066000

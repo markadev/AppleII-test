@@ -4,12 +4,14 @@ A diagnostic disk for testing various Apple II functions
 
  * `MODETEST` - test the different Apple II and IIe video modes
  * `BANKTEST` - test IIe memory write behavior under various combinations of soft-switches
+ * `MOUSE.MOVE` - Demo from the Apple Mouse Interface manual to read the mouse position
+ * `SPLIT` - Apple video split-screen demo by Bob Bishop, Softalk, October 1982
 
 
 ## Running the image
 
 Write the disk image (`AppleTest.dsk`) to a floppy or load it onto a disk emulator and boot it on
-an Apple II+ or Apple IIe. You can `BRUN` the programs from the basic prompt
+an Apple II+ or Apple IIe. You can `RUN` or `BRUN` the programs from the basic prompt
 
 ```
 ]BRUN MODETEST
